@@ -133,38 +133,38 @@ Handle_InvalidDates_ReturnsFailure
 ### FASE 4: Sistema Wiki (Semana 4)
 
 **Entidades**
-- [ ] WikiPage con versionado automático
-- [ ] WikiPageVersion con diff tracking
+- [ x] WikiPage con versionado automático
+- [ x] WikiPageVersion con diff tracking
 
 **Commands**
-- [ ] CreateWikiPageCommand + Handler + Validator
-- [ ] UpdateWikiPageCommand + Handler (auto-versiona)
-- [ ] PublishWikiPageCommand + Handler
-- [ ] AddWikiPageTagCommand + Handler
+- [ x] CreateWikiPageCommand + Handler + Validator
+- [ x] UpdateWikiPageCommand + Handler (auto-versiona)
+- [ x] PublishWikiPageCommand + Handler
+- [ x] AddWikiPageTagCommand + Handler
 
 **Queries**
-- [ ] GetWikiPageBySlugQuery + Handler
-- [ ] GetWikiPagesQuery + Handler (búsqueda + filtros)
-- [ ] GetWikiPageHistoryQuery + Handler
-- [ ] SearchWikiPagesQuery + Handler (full-text)
+- [ x] GetWikiPageBySlugQuery + Handler
+- [ x] GetWikiPagesQuery + Handler (búsqueda + filtros)
+- [ x] GetWikiPageHistoryQuery + Handler
+- [ x] SearchWikiPagesQuery + Handler (full-text)
 
 **Features**
-- [ ] Markdown Parser (Markdig)
-- [ ] Diff Engine (comparar versiones)
-- [ ] Tag System
-- [ ] Link Validator
+- [ x] Markdown Parser (Markdig)
+- [ x] Diff Engine (comparar versiones)
+- [ x] Tag System
+- [ x] Link Validator
 
 ---
 
 ### FASE 5: Persistencia (Semana 5)
 
 **EF Core Configurations**
-- [ ] ProjectConfiguration (tabla Projects)
-- [ ] ApplicationConfiguration (tabla Applications, FK a Projects)
-- [ ] CapabilityConfiguration (tabla Capabilities, FK a Applications)
-- [ ] BusinessRuleConfiguration (tabla BusinessRules, FK a Capabilities)
-- [ ] WikiPageConfiguration (tabla WikiPages)
-- [ ] WikiPageVersionConfiguration (tabla WikiPageVersions, FK a WikiPages)
+- [ x] ProjectConfiguration (tabla Projects)
+- [ x] ApplicationConfiguration (tabla Applications, FK a Projects)
+- [ x] CapabilityConfiguration (tabla Capabilities, FK a Applications)
+- [ x] BusinessRuleConfiguration (tabla BusinessRules, FK a Capabilities)
+- [ x] WikiPageConfiguration (tabla WikiPages)
+- [ x] WikiPageVersionConfiguration (tabla WikiPageVersions, FK a WikiPages)
 
 **Repositories**
 - [ ] IProjectRepository + ProjectRepository
