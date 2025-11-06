@@ -112,21 +112,21 @@ Handle_InvalidDates_ReturnsFailure
 ### FASE 3: Capacidades y Reglas (Semana 3)
 
 **Commands**
-- [ ] CreateCapabilityCommand + Handler + Validator
-- [ ] UpdateCapabilityCommand + Handler
-- [ ] CreateBusinessRuleCommand + Handler + Validator
-- [ ] UpdateBusinessRuleCommand + Handler
-- [ ] ActivateBusinessRuleCommand + Handler
+- [ x ] CreateCapabilityCommand + Handler + Validator
+- [ x ] UpdateCapabilityCommand + Handler
+- [ x ] CreateBusinessRuleCommand + Handler + Validator
+- [ x ] UpdateBusinessRuleCommand + Handler
+- [ x ] ActivateBusinessRuleCommand + Handler
 
 **Queries**
-- [ ] GetCapabilitiesByApplicationQuery + Handler
-- [ ] GetCapabilityWithRulesQuery + Handler
-- [ ] GetBusinessRulesByCapabilityQuery + Handler
-- [ ] SearchBusinessRulesQuery + Handler
+- [ x ] GetCapabilitiesByApplicationQuery + Handler
+- [ x ] GetCapabilityWithRulesQuery + Handler
+- [ x ] GetBusinessRulesByCapabilityQuery + Handler
+- [ x ] SearchBusinessRulesQuery + Handler
 
 **DTOs**
-- [ ] CapabilityDto, CreateCapabilityDto
-- [ ] BusinessRuleDto, CreateBusinessRuleDto
+- [ x ] CapabilityDto, CreateCapabilityDto
+- [ x ] BusinessRuleDto, CreateBusinessRuleDto
 
 ---
 
