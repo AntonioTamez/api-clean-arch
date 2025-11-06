@@ -1,6 +1,7 @@
 using CleanArch.Application.Common.Interfaces;
 using CleanArch.Domain.Interfaces;
 using CleanArch.Infrastructure.Auth;
+using CleanArch.Infrastructure.Export;
 using CleanArch.Infrastructure.Persistence;
 using CleanArch.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,9 @@ public static class DependencyInjection
         // Registrar servicios de autenticación
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+        // Registrar servicios de exportación
+        services.AddScoped<IExcelExportService, ExcelExportService>();
 
         return services;
     }
