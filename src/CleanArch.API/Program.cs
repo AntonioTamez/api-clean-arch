@@ -63,12 +63,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// CORS debe ir antes de otros middlewares
+app.UseCors();
+
 // Middleware personalizado
 app.UseExceptionHandlingMiddleware();
 
-app.UseHttpsRedirection();
-
-app.UseCors();
+// Comentar HTTPS redirect en desarrollo para evitar problemas
+// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
