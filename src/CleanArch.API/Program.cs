@@ -2,6 +2,7 @@ using System.Text;
 using CleanArch.API.Middleware;
 using CleanArch.Application;
 using CleanArch.Infrastructure;
+using CleanArch.Infrastructure.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -157,6 +158,13 @@ app.MapControllers();
 
 // Mapear SignalR Hub
 app.MapHub<CleanArch.API.Hubs.NotificationHub>("/hubs/notifications");
+
+// Migrar y seedear base de datos en desarrollo
+if (app.Environment.IsDevelopment())
+{
+    app.Logger.LogInformation("Development environment detected. Checking database...");
+    await app.MigrateDatabaseAsync(seedData: true);
+}
 
 // Log de inicio
 app.Logger.LogInformation("Clean Architecture API started successfully");
