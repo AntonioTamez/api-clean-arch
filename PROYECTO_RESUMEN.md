@@ -398,8 +398,8 @@ POST /api/wiki/{id}/view
 ## 📝 Próximos Pasos (FASE 7-8)
 
 ### Features Avanzadas Pendientes:
-- [ ] Dashboard con estadísticas
-- [ ] Búsqueda avanzada con filtros complejos
+- [ x ] Dashboard con estadísticas
+- [ x ] Búsqueda avanzada con filtros complejos
 - [ ] Exportación a PDF/Excel
 - [ ] Notificaciones en tiempo real
 - [ ] Sistema de permisos y roles
