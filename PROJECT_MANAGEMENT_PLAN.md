@@ -54,19 +54,19 @@ API RESTful para gestionar proyectos de software con:
 ### FASE 1: Fundamentos del Dominio (Semana 1)
 
 **Value Objects**
-- [ ] ProjectCode (validación formato)
-- [ ] ApplicationVersion (SemVer)
-- [ ] Priority (enum con orden)
-- [ ] ProjectStatus, ApplicationStatus, CapabilityStatus
-- [ ] DateRange (validación)
-- [ ] RuleCode (formato único)
-- [ ] Slug (URL-friendly)
+- [ x ] ProjectCode (validación formato)
+- [ x ] ApplicationVersion (SemVer)
+- [ x ] Priority (enum con orden)
+- [ x ] ProjectStatus, ApplicationStatus, CapabilityStatus
+- [ x ] DateRange (validación)
+- [ x ] RuleCode (formato único)
+- [ x ] Slug (URL-friendly)
 
 **Entidades Base**
-- [ ] Project + ProjectCreated event
-- [ ] Application + ApplicationAdded event
-- [ ] Capability + CapabilityAdded event
-- [ ] BusinessRule + BusinessRuleCreated event
+- [ x ] Project + ProjectCreated event
+- [ x ] Application + ApplicationAdded event
+- [ x ] Capability + CapabilityAdded event
+- [ x ] BusinessRule + BusinessRuleCreated event
 
 **Tests TDD Domain (>90% coverage)**
 ```csharp
