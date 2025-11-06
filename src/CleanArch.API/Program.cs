@@ -1,9 +1,11 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using CleanArch.API.Middleware;
 using CleanArch.Application;
 using CleanArch.Infrastructure;
 using CleanArch.Infrastructure.Persistence.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -75,6 +77,58 @@ builder.Services.AddScoped<CleanArch.Application.Common.Interfaces.IRealtimeMess
 // Agregar capas de la aplicación
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Configurar Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<CleanArch.Infrastructure.Persistence.ApplicationDbContext>("database")
+    .AddCheck("api", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("API is running"));
+
+// Configurar Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = 429; // Too Many Requests
+    
+    // Política general - Fixed Window
+    options.AddFixedWindowLimiter(policyName: "fixed", configureOptions: opts =>
+    {
+        opts.PermitLimit = 100;
+        opts.Window = TimeSpan.FromMinutes(1);
+        opts.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opts.QueueLimit = 0;
+    });
+
+    // Política de autenticación - más restrictiva
+    options.AddFixedWindowLimiter(policyName: "auth", configureOptions: opts =>
+    {
+        opts.PermitLimit = 10;
+        opts.Window = TimeSpan.FromMinutes(5);
+        opts.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opts.QueueLimit = 0;
+    });
+
+    // Política para endpoints públicos - Sliding Window
+    options.AddSlidingWindowLimiter(policyName: "public", configureOptions: opts =>
+    {
+        opts.PermitLimit = 50;
+        opts.Window = TimeSpan.FromMinutes(1);
+        opts.SegmentsPerWindow = 6;
+        opts.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opts.QueueLimit = 0;
+    });
+});
+
+// Configurar API Versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = Asp.Versioning.ApiVersionReader.Combine(
+        new Asp.Versioning.QueryStringApiVersionReader("api-version"),
+        new Asp.Versioning.HeaderApiVersionReader("X-Api-Version"),
+        new Asp.Versioning.MediaTypeApiVersionReader("ver")
+    );
+});
 
 // Configurar Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -151,6 +205,9 @@ app.UseExceptionHandlingMiddleware();
 // Comentar HTTPS redirect en desarrollo para evitar problemas
 // app.UseHttpsRedirection();
 
+// Aplicar Rate Limiting
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -158,6 +215,17 @@ app.MapControllers();
 
 // Mapear SignalR Hub
 app.MapHub<CleanArch.API.Hubs.NotificationHub>("/hubs/notifications");
+
+// Mapear Health Checks
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false  // Only return 200 OK
+});
 
 // Migrar y seedear base de datos en desarrollo
 if (app.Environment.IsDevelopment())
