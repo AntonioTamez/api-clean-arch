@@ -17,7 +17,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext, IUnitOfWor
     {
     }
 
-    public DbSet<Product> Products => Set<Product>();
+    // DbSets
+    public DbSet<Product> Products => Set<Product>(); // TODO: Eliminar cuando se retire Product
+    public DbSet<Project> Projects => Set<Project>();
+    public DbSet<Domain.Entities.Application> Applications => Set<Domain.Entities.Application>();
+    public DbSet<Capability> Capabilities => Set<Capability>();
+    public DbSet<BusinessRule> BusinessRules => Set<BusinessRule>();
+    public DbSet<WikiPage> WikiPages => Set<WikiPage>();
+    public DbSet<WikiPageVersion> WikiPageVersions => Set<WikiPageVersion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -32,7 +32,11 @@ public static class DependencyInjection
             provider.GetRequiredService<ApplicationDbContext>());
 
         // Registrar Repositories
-        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>(); // TODO: Eliminar cuando se retire Product
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<ICapabilityRepository, CapabilityRepository>();
+        services.AddScoped<IBusinessRuleRepository, BusinessRuleRepository>();
+        services.AddScoped<IWikiPageRepository, WikiPageRepository>();
 
         return services;
     }

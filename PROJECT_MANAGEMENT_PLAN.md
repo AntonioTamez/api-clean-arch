@@ -167,17 +167,17 @@ Handle_InvalidDates_ReturnsFailure
 - [ x] WikiPageVersionConfiguration (tabla WikiPageVersions, FK a WikiPages)
 
 **Repositories**
-- [ ] IProjectRepository + ProjectRepository
-- [ ] IApplicationRepository + ApplicationRepository
-- [ ] ICapabilityRepository + CapabilityRepository
-- [ ] IBusinessRuleRepository + BusinessRuleRepository
-- [ ] IWikiPageRepository + WikiPageRepository
+- [ x] IProjectRepository + ProjectRepository
+- [ x] IApplicationRepository + ApplicationRepository
+- [ x] ICapabilityRepository + CapabilityRepository
+- [ x] IBusinessRuleRepository + BusinessRuleRepository
+- [ x] IWikiPageRepository + WikiPageRepository
 
 **Migraciones**
-- [ ] 001_CreateProjects
-- [ ] 002_CreateApplications
-- [ ] 003_CreateCapabilitiesAndRules
-- [ ] 004_CreateWikiPages
+- [ x] 001_CreateProjects
+- [ x] 002_CreateApplications
+- [ x] 003_CreateCapabilitiesAndRules
+- [ x] 004_CreateWikiPages
 
 **Seeders**
 - [ ] SampleProjectSeeder
