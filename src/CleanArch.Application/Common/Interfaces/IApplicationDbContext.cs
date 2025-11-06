@@ -15,6 +15,7 @@ public interface IApplicationDbContext
     DbSet<BusinessRule> BusinessRules { get; }
     DbSet<WikiPage> WikiPages { get; }
     DbSet<WikiPageVersion> WikiPageVersions { get; }
+    DbSet<User> Users { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

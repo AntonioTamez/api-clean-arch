@@ -1,5 +1,6 @@
 using CleanArch.Application.Common.Interfaces;
 using CleanArch.Domain.Interfaces;
+using CleanArch.Infrastructure.Auth;
 using CleanArch.Infrastructure.Persistence;
 using CleanArch.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,11 @@ public static class DependencyInjection
         services.AddScoped<ICapabilityRepository, CapabilityRepository>();
         services.AddScoped<IBusinessRuleRepository, BusinessRuleRepository>();
         services.AddScoped<IWikiPageRepository, WikiPageRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // Registrar servicios de autenticación
+        services.AddScoped<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
 
         return services;
     }
