@@ -83,21 +83,21 @@ CannotCompleteProject_WithIncompleteApplications
 ### FASE 2: Proyectos y Aplicaciones (Semana 2)
 
 **Commands (Application Layer)**
-- [ ] CreateProjectCommand + Handler + Validator
-- [ ] UpdateProjectCommand + Handler + Validator
-- [ ] ChangeProjectStatusCommand + Handler
-- [ ] CreateApplicationCommand + Handler + Validator
-- [ ] UpdateApplicationCommand + Handler
+- [ x ] CreateProjectCommand + Handler + Validator
+- [ x ] UpdateProjectCommand + Handler + Validator
+- [ x ] ChangeProjectStatusCommand + Handler
+- [ x ] CreateApplicationCommand + Handler + Validator
+- [ x ] UpdateApplicationCommand + Handler
 
 **Queries**
-- [ ] GetProjectByIdQuery + Handler
-- [ ] GetProjectsQuery + Handler (filtros + paginación)
-- [ ] GetApplicationByIdQuery + Handler
-- [ ] GetApplicationsByProjectQuery + Handler
+- [ x ] GetProjectByIdQuery + Handler
+- [ x ] GetProjectsQuery + Handler (filtros + paginación)
+- [ x ] GetApplicationByIdQuery + Handler
+- [ x ] GetApplicationsByProjectQuery + Handler
 
 **DTOs**
-- [ ] ProjectDto, ProjectListItemDto, CreateProjectDto
-- [ ] ApplicationDto, ApplicationListItemDto, CreateApplicationDto
+- [ x ] ProjectDto, ProjectListItemDto, CreateProjectDto
+- [ x ] ApplicationDto, ApplicationListItemDto, CreateApplicationDto
 
 **Tests TDD Application (>85% coverage)**
 ```csharp
