@@ -44,9 +44,32 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+    
+    // Configurar autenticación para SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
+
+// Configurar SignalR
+builder.Services.AddSignalR();
+
+// Registrar SignalR Messenger
+builder.Services.AddScoped<CleanArch.Application.Common.Interfaces.IRealtimeMessenger, CleanArch.API.Services.SignalRMessenger>();
 
 // Agregar capas de la aplicación
 builder.Services.AddApplication();
@@ -131,6 +154,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Mapear SignalR Hub
+app.MapHub<CleanArch.API.Hubs.NotificationHub>("/hubs/notifications");
 
 // Log de inicio
 app.Logger.LogInformation("Clean Architecture API started successfully");
