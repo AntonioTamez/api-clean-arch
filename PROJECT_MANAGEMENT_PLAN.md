@@ -180,8 +180,8 @@ Handle_InvalidDates_ReturnsFailure
 - [ x] 004_CreateWikiPages
 
 **Seeders**
-- [ ] SampleProjectSeeder
-- [ ] SampleWikiSeeder
+- [ x ] SampleProjectSeeder
+- [ x ] SampleWikiSeeder
 
 ---
 
