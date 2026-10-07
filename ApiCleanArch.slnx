@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ApiCleanArch.Api/ApiCleanArch.Api.csproj" />
+    <Project Path="src/ApiCleanArch.Application/ApiCleanArch.Application.csproj" />
+    <Project Path="src/ApiCleanArch.Domain/ApiCleanArch.Domain.csproj" />
+    <Project Path="src/ApiCleanArch.Infrastructure/ApiCleanArch.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ApiCleanArch.Api.IntegrationTests/ApiCleanArch.Api.IntegrationTests.csproj" />
+    <Project Path="tests/ApiCleanArch.Application.UnitTests/ApiCleanArch.Application.UnitTests.csproj" />
+    <Project Path="tests/ApiCleanArch.Domain.UnitTests/ApiCleanArch.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>
