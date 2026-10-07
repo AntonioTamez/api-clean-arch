@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  SOLUTION: ApiCleanArch.slnx
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore $SOLUTION
+
+      - name: Build
+        run: dotnet build $SOLUTION --no-restore -c Release
+
+  unit-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Domain unit tests
+        run: >
+          dotnet test tests/ApiCleanArch.Domain.UnitTests
+          -c Release
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults/domain
+
+      - name: Application unit tests
+        run: >
+          dotnet test tests/ApiCleanArch.Application.UnitTests
+          -c Release
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults/application
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit-tests
+          path: TestResults
+          if-no-files-found: warn
+
+  integration-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: API integration tests
+        run: >
+          dotnet test tests/ApiCleanArch.Api.IntegrationTests
+          -c Release
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults/api
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration-tests
+          path: TestResults
+          if-no-files-found: warn
