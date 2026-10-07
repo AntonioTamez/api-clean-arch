@@ -1,0 +1,9 @@
+name: api-clean-ats
+on:
+    push:
+        branches:
+            - main
+            - dev
+            - sit
+            - uat
+            
