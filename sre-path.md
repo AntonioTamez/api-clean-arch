@@ -136,6 +136,148 @@ Work in `.github/workflows/`.
 
 **Checkpoint**: explain `permissions`, why fork PRs do not get your secrets, and why jobs do not share a filesystem.
 
+### Phase 1 reference: what was built and why, line by line
+
+This section documents the real `.github/workflows/ci.yml` of this repository. Line numbers refer to the file as it is today; if you edit the file, update the numbers.
+
+#### What was done, in order
+
+| Commit | Change |
+|--------|--------|
+| `d9d3ff8` | First GitHub Actions workflow added. |
+| `887500e` | CI workflow with `build` and test jobs. |
+| `3cef976` | Removed the throwaway `hello.yml` (it was only for learning). |
+| manual edit | `push` trigger extended to `feat/**` branches, so pushing a feature branch runs CI without a PR. |
+
+Facts discovered while doing it:
+
+- The first version only ran on `pull_request` and on `push` to `master`. Pushing `feat/users-crud-api` without a PR triggered nothing, because no event matched. That is why `feat/**` was added.
+- The solution file is `ApiCleanArch.slnx` (the new XML solution format). There is no `global.json`, so the SDK version is pinned in the workflow.
+- `Directory.Build.props` sets `TreatWarningsAsErrors=true` and `Nullable=enable`, so the CI build enforces those rules: one warning breaks the pipeline.
+- The integration tests use `WebApplicationFactory` (in-memory server), so they need no database, Docker or open ports.
+
+Status of the Phase 1 steps with this file:
+
+| Step | Covered by | State |
+|------|------------|-------|
+| 1.3 Build and test | `build` job and test jobs | Written, **pending first green run** |
+| 1.7 Split into jobs | `needs: build`, parallel test jobs | Written, pending run |
+| 1.8 Coverage artifacts | `--collect` and `upload-artifact` | Written, pending run |
+| 1.10 Least privilege and concurrency | `permissions` and `concurrency` | Written, pending run |
+| 1.5, 1.6, 1.9, 1.11, 1.12 | not yet | Not started |
+
+Do not tick the checkboxes until you have seen the green run and the downloaded artifact. A checkbox without proof is a lie to yourself.
+
+#### Block 1: name and triggers (lines 1-8)
+
+| Line | Code | What it does and why |
+|------|------|----------------------|
+| 1 | `name: CI` | Display name in the Actions tab and in PR checks. Keep it short and stable: branch protection rules refer to checks by name. |
+| 3 | `on:` | Starts the list of **events** that start the workflow. A workflow does nothing unless an event matches. |
+| 4 | `pull_request:` | Runs on every pull request (opened, new commits pushed, reopened). With no filters, it applies to PRs against any branch. This is the gate that protects `master`. For this event GitHub checks out the **merge result** of your branch with the target branch, so you test what would actually land. |
+| 5 | `push:` | Runs when commits are pushed. Needs a filter, otherwise every branch push would run it. |
+| 6-8 | `branches:` with `master` and `'feat/**'` | Only pushes to `master` and to branches matching `feat/**` run. `**` matches across slashes, so `feat/users-crud-api` matches. The quotes are required: an unquoted `*` at the start of a YAML value has special meaning, and quoting avoids surprises. |
+
+Tradeoff you must understand: with both `pull_request` and `push` on `feat/**`, a push to a feature branch **that has an open PR runs CI twice** (one `push` run on the branch, one `pull_request` run on the merge result). It wastes minutes but is harmless. Options when it bothers you: drop `feat/**` once you always work with PRs, or filter the `push` event to `master` only.
+
+#### Block 2: permissions and concurrency (lines 10-15)
+
+| Line | Code | What it does and why |
+|------|------|----------------------|
+| 10-11 | `permissions:` / `contents: read` | Sets what the automatic `GITHUB_TOKEN` can do. Once you declare `permissions`, every scope you do not list becomes `none`. CI only needs to read the code, so the token is read-only. If a third-party action is ever compromised, it cannot push code, edit releases or touch issues with this token. This is least privilege. |
+| 13 | `concurrency:` | Controls how many runs of a group can be active at once. |
+| 14 | `group: ci-${{ github.ref }}` | The group key. `github.ref` is the branch (or `refs/pull/N/merge` for a PR). Runs with the same key compete; different keys run independently. Because a `push` run and a `pull_request` run have different refs, they do **not** cancel each other. |
+| 15 | `cancel-in-progress: true` | When a new run enters the group, the older running one is cancelled. You pushed a fix, so the previous run is obsolete. Tradeoff: on `master` you may prefer to let every run finish so each merged commit has its own verdict. |
+
+#### Block 3: shared environment (lines 17-20)
+
+| Line | Code | What it does and why |
+|------|------|----------------------|
+| 17 | `env:` | Environment variables defined at workflow level, visible to every job and step. |
+| 18 | `DOTNET_NOLOGO: true` | Hides the .NET CLI welcome banner. Cleaner logs. |
+| 19 | `DOTNET_CLI_TELEMETRY_OPTOUT: true` | Disables .NET CLI telemetry. Less noise, no outbound telemetry from CI. |
+| 20 | `SOLUTION: ApiCleanArch.slnx` | One place that names the solution file. Steps use `$SOLUTION`. If the file is renamed, you change one line. Note: `$SOLUTION` is bash syntax and works because `ubuntu-24.04` runs `run:` steps with bash. On a Windows runner the default shell is PowerShell, where you would write `$env:SOLUTION`. |
+
+#### Block 4: the `build` job (lines 22-38)
+
+| Line | Code | What it does and why |
+|------|------|----------------------|
+| 22 | `jobs:` | Container for all jobs. Jobs run in parallel by default unless you chain them with `needs`. |
+| 23 | `build:` | The job id. Other jobs refer to it with `needs`, and branch protection will list this name as a required check. |
+| 24 | `runs-on: ubuntu-24.04` | The runner: a fresh Linux virtual machine created for this job and destroyed afterwards. Nothing from other jobs or previous runs exists on it. Linux is cheaper and faster than Windows, and your API will run on Linux inside a container later. The version is pinned on purpose: `ubuntu-latest` currently points to the same image (24.04), but GitHub will move that alias eventually and your CI would change without any commit of yours. Other labels in the runner-images README: `ubuntu-26.04`, `ubuntu-22.04`, Windows and macOS ones. |
+| 25 | `steps:` | Ordered list. A step failing stops the job (unless told otherwise). |
+| 26-27 | `uses: actions/checkout@v4` | Clones your repository onto the runner. Without it the workspace is empty and `dotnet restore` cannot find the solution. By default it fetches only the single commit that triggered the run (shallow clone), which is fast. |
+| 29-32 | `actions/setup-dotnet@v4` with `dotnet-version: 10.0.x` | Installs the .NET SDK. `10.0.x` means the latest 10.0 patch. It is required because there is no `global.json`, and the runner image may not ship the SDK you need. Reproducible enough, while still receiving security patches. |
+| 34-35 | `run: dotnet restore $SOLUTION` | Downloads NuGet packages for every project in the solution. Isolating restore makes network failures obvious and lets the next steps skip it. |
+| 37-38 | `run: dotnet build $SOLUTION --no-restore -c Release` | Compiles everything. `--no-restore` avoids restoring again. `-c Release` compiles with the configuration you will ship, so Release-only problems show up here. Because of `TreatWarningsAsErrors`, any warning fails this step. |
+
+What this job is really for: **fast failure**. If the code does not even compile, there is no point in spinning up two more machines to run tests.
+
+Things to be honest about: the compiled output of this job is thrown away when the job ends. The test jobs compile again. The `needs` relationship is about ordering and early failure, not about sharing binaries. Caching (step 1.6) reduces the cost.
+
+#### Block 5: the `unit-tests` job (lines 40-72)
+
+| Line | Code | What it does and why |
+|------|------|----------------------|
+| 40 | `unit-tests:` | Job id. Also the check name to require in branch protection. |
+| 41 | `needs: build` | This job starts only after `build` succeeds. If `build` fails, this job is skipped. Without `needs`, jobs start in parallel. |
+| 42 | `runs-on: ubuntu-24.04` | A brand-new machine, unrelated to the `build` one. |
+| 44-45 | `actions/checkout@v4` | Repeated on purpose: the new machine has no code. |
+| 47-50 | `actions/setup-dotnet@v4` | Repeated for the same reason: the new machine has no SDK installed by us. |
+| 52 | `name: Domain unit tests` | Readable label in the log. |
+| 53 | `run: >` | YAML **folded scalar**: the following indented lines are joined into one line separated by spaces. It lets you split a long command into readable pieces. |
+| 54 | `dotnet test tests/ApiCleanArch.Domain.UnitTests` | Runs the tests of one project (build and restore happen implicitly because there is no `--no-build`). Domain tests have no infrastructure, per the testing rules in `AGENTS.md`. |
+| 55 | `-c Release` | Same configuration as the build job. |
+| 56 | `--collect:"XPlat Code Coverage"` | Activates the `coverlet.collector` package that the test projects already reference, producing a coverage report in Cobertura XML. The quotes are needed because the name contains a space. |
+| 57 | `--results-directory TestResults/domain` | Where results are written. Separate folders per project avoid mixed or overwritten files. |
+| 59-64 | Application unit tests | Same pattern for `tests/ApiCleanArch.Application.UnitTests`, results in `TestResults/application`. |
+| 66 | `name: Upload coverage` | Label of the step. |
+| 67 | `if: always()` | Run this step even if a previous step failed or the run was cancelled. By default a step runs only when all previous ones succeeded. You want the evidence most when tests fail. |
+| 68 | `uses: actions/upload-artifact@v4` | Stores files from the runner so you can download them after the job ends. The machine disappears; artifacts survive. |
+| 70 | `name: coverage-unit-tests` | Artifact name shown on the run page. Must be unique within a run, which is why the two test jobs use different names. |
+| 71 | `path: TestResults` | Folder to upload. Includes both `domain` and `application` subfolders. |
+| 72 | `if-no-files-found: warn` | If nothing is found, warn instead of failing. A missing coverage file should not hide the real test failure. |
+
+Behavior to know: if the Domain tests fail, the Application tests step is skipped (default `if: success()`), so you only see the first failure per run. Upload still happens because of `always()`. Fixing it later means using `if: always()` on the second test step or splitting into a matrix.
+
+#### Block 6: the `integration-tests` job (lines 74-99)
+
+| Line | Code | What it does and why |
+|------|------|----------------------|
+| 74-76 | `integration-tests:` / `needs: build` / `runs-on` | Same structure as unit tests. It also waits for `build`, so both test jobs run **in parallel** after it. |
+| 78-84 | checkout and setup-dotnet | Repeated: new machine. |
+| 86-91 | `dotnet test tests/ApiCleanArch.Api.IntegrationTests ...` | Runs the API integration tests. They use `Microsoft.AspNetCore.Mvc.Testing` (`WebApplicationFactory`), which hosts the API in memory in the test process, so there is no real network, database or container. If you add a real database later, this job will need a service container. |
+| 93-99 | upload coverage with `if: always()` | Same logic as above, artifact named `coverage-integration-tests` to avoid a name collision with the other job. |
+
+Why unit and integration tests are separate jobs: unit tests give fast feedback about business rules; integration tests tell you whether the HTTP boundary works. When something is red you know which layer to look at first, and `AGENTS.md` already separates them.
+
+#### How the run looks
+
+```
+build ──┬── unit-tests
+        └── integration-tests
+```
+
+Check names to require in branch protection (step 1.5): `build`, `unit-tests`, `integration-tests`.
+
+#### Known limitations and next improvements
+
+- Action versions (`@v4`) were not verified against the latest majors. Check each action's Marketplace page.
+- Actions are referenced by mutable tags. Pin them to commit SHAs (step 1.11).
+- No NuGet cache, so every job restores from scratch (step 1.6).
+- No format check, and there is no `.editorconfig` yet (step 1.9). Create the `.editorconfig` first.
+- Coverage is uploaded but not evaluated; there is no threshold.
+- Test results are not published in `.trx` format (step 1.8 mentions `--logger trx`).
+- Double runs on feature branches with open PRs, explained in Block 1.
+
+#### Exercises to verify you understood
+
+1. Remove the `checkout` step from `build` on a throwaway branch and read the error.
+2. Break one Domain test. Which jobs run, which are skipped, is the artifact still uploaded?
+3. Add a nullable warning to the code. Which job fails and why?
+4. Push a commit to `feat/...` with an open PR and count the workflow runs.
+5. Download the coverage artifact and find the `coverage.cobertura.xml` file.
+
 ---
 
 ## Phase 2: Docker
