@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApiCleanArch.Application\ApiCleanArch.Application.csproj" />
+    <ProjectReference Include="..\ApiCleanArch.Infrastructure\ApiCleanArch.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
